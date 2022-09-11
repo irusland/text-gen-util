@@ -64,7 +64,7 @@ class TokenDataset(Dataset):
         for sentence in sentences:
             if not (words := self._split_into_words(sentence)):
                 continue
-            if len(words) < self._min_ngram:
+            if len(words) < self._ngram:
                 resulting_sentences.append(words)
                 continue
             processed = self._make_ngrams(words, pair_count, index_to_sentence_map)
