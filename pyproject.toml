@@ -9,6 +9,9 @@ python = ">=3.8"
 torch = "^1.12.1"
 torchtext = "^0.13.1"
 wikipedia = "^1.4.0"
+numpy = "^1.23.3"
+scipy = "^1.6.1"
+pyfillet = {git = "https://github.com/ivan-chai/pyfillet.git", rev = "main"}
 
 [tool.poetry.dev-dependencies]
 

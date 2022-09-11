@@ -14,6 +14,7 @@ class TokenDataset(Dataset):
         dictionary: Dictionary,
         raw_text: str,
         ngram: int = 2,
+        min_ngram: int = 2,
         min_word_length: int = 0,
     ):
         self._dictionary = dictionary
@@ -24,6 +25,7 @@ class TokenDataset(Dataset):
 
         self._clean_text = self._preprocess(raw_text)
         self._ngram = ngram
+        self._min_ngram = min_ngram
         self._min_word_length = min_word_length
 
         self._index_to_sentence_map, self._sentences = self._split_into_sentences(self._clean_text)
@@ -43,7 +45,7 @@ class TokenDataset(Dataset):
 
     def _make_ngrams(self, words: Tuple[str], initial_index: int, index_to_sentence_map) -> int:
         processed = 0
-        for ngram_len in range(1, self._ngram + 1):
+        for ngram_len in range(self._min_ngram, self._ngram + 1):
             ngram_count = len(words) - ngram_len
             for index in range(ngram_count):
                 index_to_sentence_map[initial_index + index] = (
