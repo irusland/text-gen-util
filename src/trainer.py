@@ -97,8 +97,7 @@ class Trainer:
         return self._pretty_text(result_text)
 
     def save(self, path: Path) -> None:
-        to_dump = self._ngram_model, self._dictionary, self._ngram
-
+        to_dump = self
         with path.open('wb') as fp:
             pickle.dump(to_dump, fp)
 
@@ -107,5 +106,4 @@ class Trainer:
         with path.open('rb') as fp:
             dumped = pickle.load(fp)
 
-        ngram_model, dictionary, ngram = dumped
-        return cls(ngram_model=ngram_model, dictionary=dictionary, ngram=ngram)
+        return dumped
