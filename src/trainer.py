@@ -24,11 +24,13 @@ class Trainer:
         dictionary: Dictionary,
         embedder: WordEmbedder,
         ngram: int = 2,
+        min_ngram: int = 1,
     ):
         self._ngram_model = ngram_model
-        self._ngram = ngram
         self._dictionary = dictionary
         self._embedder = embedder
+        self._ngram = ngram
+        self._min_ngram = min_ngram
 
     def fit(self, input_dir: Optional[str]):
         texts = []
@@ -54,7 +56,7 @@ class Trainer:
             self._fit_iteration(dataloader)
 
     def _prepare_dataloader(self, raw_text: str) -> DataLoader:
-        dataset = TokenDataset(raw_text=raw_text, ngram=self._ngram, dictionary=self._dictionary)
+        dataset = TokenDataset(raw_text=raw_text, dictionary=self._dictionary, ngram=self._ngram, min_ngram=self._min_ngram)
         return DataLoader(dataset, batch_size=1)
 
     def _fit_iteration(self, dataloader: DataLoader) -> None:

@@ -25,13 +25,17 @@ parser.add_argument('--ngram', type=int,
                     default=2,
                     help='Ngram count.')
 
+parser.add_argument('--min-ngram', type=int,
+                    default=1,
+                    help='Minimum ngram length.')
+
 args = parser.parse_args()
 model_path = args.model
 
 ngram_model = NGramModel()
 dictionary = Dictionary()
 embedder = WordEmbedder()
-trainer = Trainer(ngram_model=ngram_model, dictionary=dictionary, ngram=args.ngram, embedder=embedder)
+trainer = Trainer(ngram_model=ngram_model, dictionary=dictionary, embedder=embedder, ngram=args.ngram, min_ngram=args.min_ngram)
 
 trainer.fit(input_dir=args.input_dir)
 

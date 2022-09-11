@@ -14,7 +14,7 @@ class TokenDataset(Dataset):
         dictionary: Dictionary,
         raw_text: str,
         ngram: int = 2,
-        min_ngram: int = 2,
+        min_ngram: int = 1,
         min_word_length: int = 0,
     ):
         self._dictionary = dictionary
