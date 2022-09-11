@@ -81,19 +81,9 @@ class Trainer:
             sentence_tokens = TokenDataset(raw_text=' '.join(sentence), dictionary=self._dictionary).get_tokens()
         return sentence_tokens
 
-    def continue_(self, sentence: Optional[List[str]], word_count: int):
-        sentence_tokens = self._get_sentence_tokens(sentence)
-        logger.info('Target length: %s', word_count)
-        logger.debug('Dictionary len = %s', len(self._dictionary))
-
+    def _generate_text(self,  word_to_continue_left: int, base_sentence: List[int]) -> List[List[int]]:
         result_text = []
-        current_sentence = []
-        current_sentence.extend(sentence_tokens[:word_count])
-        if len(sentence_tokens) >= word_count:
-            return current_sentence
-        word_to_continue_left = word_count - len(sentence_tokens)
-        logger.debug('Starting with %s', self._dictionary.decode_many(current_sentence))
-        logger.debug('Words to generate %s', word_to_continue_left)
+        current_sentence = base_sentence
         for i in range(word_to_continue_left):
             tokens_to_continue = tuple(current_sentence[-self._ngram:])
             logger.debug('Generating token %s for %s (%s)', i+1, tokens_to_continue, self._dictionary.decode_many(tokens_to_continue))
@@ -106,6 +96,24 @@ class Trainer:
                 result_text.append(current_sentence)
                 current_sentence = list(next_token)
         result_text.append(current_sentence)
+        return result_text
+
+    def continue_(self, sentence: Optional[List[str]], word_count: int):
+        sentence_tokens = self._get_sentence_tokens(sentence)
+        logger.info('Target length: %s', word_count)
+        logger.debug('Dictionary len = %s', len(self._dictionary))
+
+        current_sentence = []
+        current_sentence.extend(sentence_tokens[:word_count])
+        if len(sentence_tokens) >= word_count:
+            return current_sentence
+        word_to_continue_left = word_count - len(sentence_tokens)
+        logger.debug('Starting with %s', self._dictionary.decode_many(current_sentence))
+        logger.debug('Words to generate %s', word_to_continue_left)
+        result_text = self._generate_text(
+            word_to_continue_left=word_to_continue_left,
+            base_sentence=current_sentence
+        )
         return self._pretty_text(result_text)
 
     def save(self, path: Path) -> None:
