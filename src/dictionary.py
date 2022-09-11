@@ -29,7 +29,7 @@ class Dictionary:
         ]
 
     def encode(self, word: str) -> int:
-        return self._word_to_code_map.get(word, self.UNKNOWN)
+        return self._word_to_code_map.get(word, self.UNKNOWN_CODE)
 
     def decode_many(self, codes: List[int]) -> List[str]:
         return [
@@ -37,7 +37,7 @@ class Dictionary:
         ]
 
     def decode(self, code: int) -> str:
-        return self._code_to_word_map.get(code, self.UNKNOWN_CODE)
+        return self._code_to_word_map.get(code, self.UNKNOWN)
 
     def __len__(self):
         return self._current_length

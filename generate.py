@@ -27,20 +27,25 @@ parser.add_argument('--log-level',
                     default='ERROR',
                     choices=logging._nameToLevel.keys(),
                     help='Print debug messages')
-args = parser.parse_args()
-FORMAT = '%(message)s'
-level = logging._nameToLevel[args.log_level]
 
-logging.basicConfig(level=level)
-logger = logging.getLogger(__name__)
 
-model_path = args.model
-sentence_prefix = args.prefix
-word_count = args.length
+def main():
+    args = parser.parse_args()
+    level = logging._nameToLevel[args.log_level]
+    logging.basicConfig(level=level)
+    logger = logging.getLogger(__name__)
 
-trainer = Trainer.load(model_path)
+    model_path = args.model
+    sentence_prefix = args.prefix
+    word_count = args.length
 
-result = trainer.continue_(sentence=sentence_prefix, word_count=word_count)
+    trainer = Trainer.load(model_path)
 
-logger.debug("Resulting sentence: %s", result)
-print(result)
+    result = trainer.continue_(sentence=sentence_prefix, word_count=word_count)
+
+    logger.debug("Resulting sentence: %s", result)
+    print(result)
+
+
+if __name__ == '__main__':
+    main()

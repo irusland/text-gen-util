@@ -1,8 +1,11 @@
 import random
+from typing import List
 
 import numpy as np
 from numpy.random import choice
 from torch.utils.data import DataLoader
+
+from src.dictionary import Dictionary
 
 
 class NGramModelError(Exception):
@@ -44,6 +47,9 @@ class NGramModel:
         next_possible_tokens = choice(outcomes, size=size, replace=False, p=weights)
         return next_possible_tokens
 
-    def random_ngram(self):
-        key = random.choice(list(self._ngram_mapping.keys()))
+    def random_ngram(self) -> List[int]:
+        try:
+            key = random.choice(list(self._ngram_mapping.keys()))
+        except IndexError:
+            return (Dictionary.UNKNOWN_CODE, )
         return key

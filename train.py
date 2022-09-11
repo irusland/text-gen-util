@@ -31,22 +31,27 @@ parser.add_argument('--nsamples', type=int,
                     default=3,
                     help='Max next word samples to choose from.')
 
-args = parser.parse_args()
-model_path = args.model
 
-ngram_model = NGramModel()
-dictionary = Dictionary()
-embedder = WordEmbedder()
-trainer = Trainer(
-    ngram_model=ngram_model,
-    dictionary=dictionary,
-    embedder=embedder,
-    ngram=args.ngram,
-    min_ngram=args.min_ngram,
-    nsamples=args.nsamples,
-)
+def main():
+    args = parser.parse_args()
+    model_path = args.model
 
-trainer.fit(input_dir=args.input_dir)
+    ngram_model = NGramModel()
+    dictionary = Dictionary()
+    embedder = WordEmbedder()
+    trainer = Trainer(
+        ngram_model=ngram_model,
+        dictionary=dictionary,
+        embedder=embedder,
+        ngram=args.ngram,
+        min_ngram=args.min_ngram,
+        nsamples=args.nsamples,
+    )
 
-trainer.save(model_path)
+    trainer.fit(input_dir=args.input_dir)
 
+    trainer.save(model_path)
+
+
+if __name__ == '__main__':
+    main()
