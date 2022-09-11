@@ -1,4 +1,7 @@
 import random
+
+import numpy as np
+from numpy.random import choice
 from torch.utils.data import DataLoader
 
 
@@ -34,12 +37,11 @@ class NGramModel:
             sub_x = sub_x[1:]
         else:
             raise NGramModelError(f'Model was not trained on data = {x}')
-        next_possible_tokens = random.choices(
-            population=list(next_tokens_to_count_map.keys()),
-            weights=list(next_tokens_to_count_map.values()),
-            k=k,
-        )
-
+        outcomes = list(next_tokens_to_count_map.keys())
+        weights = np.array(list(next_tokens_to_count_map.values()), dtype=np.float64)
+        weights /= np.sum(weights)
+        size = min(k, len(outcomes))
+        next_possible_tokens = choice(outcomes, size=size, replace=False, p=weights)
         return next_possible_tokens
 
     def random_ngram(self):

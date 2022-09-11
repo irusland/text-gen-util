@@ -5,10 +5,6 @@ from pathlib import Path
 
 from src.trainer import Trainer
 
-FORMAT = '%(message)s'
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 
 def is_dir(path):
     if not os.path.isdir(path):
@@ -27,8 +23,16 @@ parser.add_argument('--model', type=Path,
 parser.add_argument('--length', type=int,
                     default=7,
                     help='Word of resulting sentence.')
-
+parser.add_argument('--log-level',
+                    default='ERROR',
+                    choices=logging._nameToLevel.keys(),
+                    help='Print debug messages')
 args = parser.parse_args()
+FORMAT = '%(message)s'
+level = logging._nameToLevel[args.log_level]
+
+logging.basicConfig(level=level)
+logger = logging.getLogger(__name__)
 
 model_path = args.model
 sentence_prefix = args.prefix
@@ -38,4 +42,5 @@ trainer = Trainer.load(model_path)
 
 result = trainer.continue_(sentence=sentence_prefix, word_count=word_count)
 
-logger.info("Resulting sentence: %s", result)
+logger.debug("Resulting sentence: %s", result)
+print(result)
