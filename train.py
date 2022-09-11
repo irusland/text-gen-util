@@ -26,13 +26,16 @@ parser.add_argument('--input-dir',
 parser.add_argument('--model', type=Path,
                     default='model.pkl',
                     help='File for saving model.')
+parser.add_argument('--ngram', type=int,
+                    default=2,
+                    help='Ngram count.')
 
 args = parser.parse_args()
 model_path = args.model
 
 ngram_model = NGramModel()
 dictionary = Dictionary()
-trainer = Trainer(ngram_model=ngram_model, dictionary=dictionary)
+trainer = Trainer(ngram_model=ngram_model, dictionary=dictionary, ngram=args.ngram)
 
 trainer.fit(input_dir=args.input_dir)
 

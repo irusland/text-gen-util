@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import Optional, List
 
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from src.dataset import TokenDataset
 from src.dictionary import Dictionary
-from src.model import NGramModel
-
+from src.model import NGramModel, NGramModelError
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class Trainer:
         self._run_iterative(texts=texts)
 
     def _run_iterative(self, texts: List[str]):
-        for text in texts:
+        for text in tqdm(texts):
             dataloader = self._prepare_dataloader(raw_text=text)
             self._fit_iteration(dataloader)
 
@@ -53,6 +53,9 @@ class Trainer:
     def _pretty_sentence(self, sentence_tokens: List[int]) -> str:
         sentence = tuple(self._dictionary.decode(token) for token in sentence_tokens)
         return f"{' '.join(sentence).capitalize()}."
+
+    def _pretty_text(self, sentences: List[List[int]]) -> str:
+        return '\n'.join([self._pretty_sentence(sentence) for sentence in sentences])
 
     def _get_sentence_tokens(self, sentence: Optional[List[str]]):
         if sentence is None:
@@ -71,23 +74,30 @@ class Trainer:
         logger.info('Target length: %s', word_count)
         logger.debug('Dictionary len = %s', len(self._dictionary))
 
-        result = []
-        result.extend(sentence_tokens[:word_count])
+        result_text = []
+        current_sentence = []
+        current_sentence.extend(sentence_tokens[:word_count])
         if len(sentence_tokens) >= word_count:
-            return result
+            return current_sentence
         word_to_continue_left = word_count - len(sentence_tokens)
-        logger.debug('Starting with %s', result)
+        logger.debug('Starting with %s', self._dictionary.decode_many(current_sentence))
         logger.debug('Words to generate %s', word_to_continue_left)
         for i in range(word_to_continue_left):
-            tokens_to_continue = tuple(result[len(result) - self._ngram:])
+            tokens_to_continue = tuple(current_sentence[-self._ngram:])
             logger.debug('Generating token %s for %s (%s)', i+1, tokens_to_continue, self._dictionary.decode_many(tokens_to_continue))
-            next_token = self._ngram_model.samples(tokens_to_continue, k=1)
-            result.extend(next_token)
-
-        return self._pretty_sentence(result)
+            try:
+                next_token = self._ngram_model.samples(tokens_to_continue, k=1)
+                current_sentence.extend(next_token)
+            except NGramModelError:
+                next_token = self._ngram_model.random_ngram()
+                logger.debug('Cannot continue, starting new sentence with %s', self._dictionary.decode_many(next_token))
+                result_text.append(current_sentence)
+                current_sentence = list(next_token)
+        result_text.append(current_sentence)
+        return self._pretty_text(result_text)
 
     def save(self, path: Path) -> None:
-        to_dump = self._ngram_model, self._dictionary
+        to_dump = self._ngram_model, self._dictionary, self._ngram
 
         with path.open('wb') as fp:
             pickle.dump(to_dump, fp)
@@ -97,5 +107,5 @@ class Trainer:
         with path.open('rb') as fp:
             dumped = pickle.load(fp)
 
-        ngram_model, dictionary = dumped
-        return cls(ngram_model=ngram_model, dictionary=dictionary)
+        ngram_model, dictionary, ngram = dumped
+        return cls(ngram_model=ngram_model, dictionary=dictionary, ngram=ngram)

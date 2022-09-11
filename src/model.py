@@ -26,18 +26,20 @@ class NGramModel:
         return self.samples(x, k=1)
 
     def samples(self, x, k=1):
-        while len(x) > 0:
-            next_tokens_to_count_map = self._ngram_mapping.get(x)
+        sub_x = x
+        while len(sub_x) > 0:
+            next_tokens_to_count_map = self._ngram_mapping.get(sub_x)
             if next_tokens_to_count_map is not None:
                 break
-            x = x[1:]
+            sub_x = sub_x[1:]
         else:
             raise NGramModelError(f'Model was not trained on data = {x}')
         next_possible_tokens = random.choices(
             population=list(next_tokens_to_count_map.keys()),
-            # weights=list(next_tokens_to_count_map.values()),
+            weights=list(next_tokens_to_count_map.values()),
             k=k,
         )
+
         return next_possible_tokens
 
     def random_ngram(self):

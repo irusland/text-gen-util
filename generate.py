@@ -30,7 +30,7 @@ parser.add_argument('--length', type=int,
                     help='Word of resulting sentence.')
 
 args = parser.parse_args()
-# print(args)
+
 model_path = args.model
 sentence_prefix = args.prefix
 word_count = args.length
