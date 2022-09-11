@@ -1,6 +1,7 @@
 import fileinput
 import logging
 import pickle
+import sys
 from pathlib import Path
 from typing import Optional, List
 
@@ -11,14 +12,23 @@ from src.dataset import TokenDataset
 from src.dictionary import Dictionary
 from src.model import NGramModel, NGramModelError
 
+from pyfillet import WordEmbedder
+
 logger = logging.getLogger(__name__)
 
 
 class Trainer:
-    def __init__(self, ngram_model: NGramModel, dictionary: Dictionary, ngram: int = 2):
+    def __init__(
+        self,
+        ngram_model: NGramModel,
+        dictionary: Dictionary,
+        embedder: WordEmbedder,
+        ngram: int = 2,
+    ):
         self._ngram_model = ngram_model
         self._ngram = ngram
         self._dictionary = dictionary
+        self._embedder = embedder
 
     def fit(self, input_dir: Optional[str]):
         texts = []
@@ -32,7 +42,7 @@ class Trainer:
                 raw_text = path.read_text()
                 texts.append(raw_text)
         else:
-            for line in fileinput.input():
+            for line in sys.stdin:
                 raw_text = line
                 texts.append(raw_text)
                 break

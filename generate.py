@@ -3,7 +3,6 @@ import logging
 import os
 from pathlib import Path
 
-from src.model import NGramModel
 from src.trainer import Trainer
 
 FORMAT = '%(message)s'
