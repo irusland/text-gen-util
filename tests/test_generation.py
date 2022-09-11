@@ -34,8 +34,8 @@ class TestGeneration:
     @pytest.mark.parametrize(
         'stdin',
         [
-         """один два два два
-два два два два два два два два три три три три четыре"""
+         """один два три два
+два три три три три три три три три четыре"""
          ],
         indirect=True
     )
@@ -48,4 +48,3 @@ class TestGeneration:
         assert out.startswith('Один')
         assert out.endswith('.\n')
         assert len(out.split()) == 100
-        raise Exception(out)
