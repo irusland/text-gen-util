@@ -39,7 +39,7 @@ class NGramModel:
                 break
             sub_x = sub_x[1:]
         else:
-            raise NGramModelError(f'Model was not trained on data = {x}')
+            raise NGramModelError(f"Model was not trained on data = {x}")
         outcomes = list(next_tokens_to_count_map.keys())
         weights = np.array(list(next_tokens_to_count_map.values()), dtype=np.float64)
         weights /= np.sum(weights)
@@ -51,5 +51,5 @@ class NGramModel:
         try:
             key = random.choice(list(self._ngram_mapping.keys()))
         except IndexError:
-            return (Dictionary.UNKNOWN_CODE, )
+            return (Dictionary.UNKNOWN_CODE,)
         return key

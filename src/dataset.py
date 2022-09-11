@@ -28,7 +28,9 @@ class TokenDataset(Dataset):
         self._min_ngram = min_ngram
         self._min_word_length = min_word_length
 
-        self._index_to_sentence_map, self._sentences = self._split_into_sentences(self._clean_text)
+        self._index_to_sentence_map, self._sentences = self._split_into_sentences(
+            self._clean_text
+        )
 
         self._sentences_into_dictionary(self._sentences)
 
@@ -39,24 +41,28 @@ class TokenDataset(Dataset):
 
     def _preprocess(self, raw_text: str) -> str:
         text = raw_text.lower()
-        text = self._digits.sub(' ', text)
-        text = self._latin.sub(' ', text)
+        text = self._digits.sub(" ", text)
+        text = self._latin.sub(" ", text)
         return text
 
-    def _make_ngrams(self, words: Tuple[str], initial_index: int, index_to_sentence_map) -> int:
+    def _make_ngrams(
+        self, words: Tuple[str], initial_index: int, index_to_sentence_map
+    ) -> int:
         processed = 0
         for ngram_len in range(self._min_ngram, self._ngram + 1):
             ngram_count = len(words) - ngram_len
             for index in range(ngram_count):
                 index_to_sentence_map[initial_index + index] = (
-                    words[index:index + ngram_len],
-                    words[index + ngram_len:index + ngram_len + 1],
+                    words[index : index + ngram_len],
+                    words[index + ngram_len : index + ngram_len + 1],
                 )
             initial_index += ngram_count
             processed += ngram_count
         return processed
 
-    def _split_into_sentences(self, text: str) -> Tuple[Dict[int, Tuple[Tuple[str], Tuple[str]]], List[List[str]]]:
+    def _split_into_sentences(
+        self, text: str
+    ) -> Tuple[Dict[int, Tuple[Tuple[str], Tuple[str]]], List[List[str]]]:
         sentences = self._sentence_terminators.split(text)
         resulting_sentences = []
         pair_count = 0
@@ -78,7 +84,8 @@ class TokenDataset(Dataset):
         # todo lemmatize?
 
         def filter_(word):
-            return len(word) > self._min_word_length and word != ''
+            return len(word) > self._min_word_length and word != ""
+
         return tuple(filter(filter_, words))
 
     def _sentences_into_dictionary(self, sentences):
@@ -90,10 +97,6 @@ class TokenDataset(Dataset):
     def __getitem__(self, index):
         X, Y = self._index_to_sentence_map[index]
         return (
-            torch.tensor(
-                [self._dictionary.encode(x) for x in X]
-            ),
-            torch.tensor(
-                [self._dictionary.encode(y) for y in Y]
-            ),
+            torch.tensor([self._dictionary.encode(x) for x in X]),
+            torch.tensor([self._dictionary.encode(y) for y in Y]),
         )

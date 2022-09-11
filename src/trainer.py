@@ -43,10 +43,10 @@ class Trainer:
         texts = []
         if input_dir is not None:
             input_dir = Path(input_dir)
-            queue = list(input_dir.glob(pattern='*'))
+            queue = list(input_dir.glob(pattern="*"))
             for path in queue:
                 if not path.is_file():
-                    queue.extend(path.glob(pattern='*'))
+                    queue.extend(path.glob(pattern="*"))
                     continue
                 raw_text = path.read_text()
                 texts.append(raw_text)
@@ -63,7 +63,12 @@ class Trainer:
             self._fit_iteration(dataloader)
 
     def _prepare_dataloader(self, raw_text: str) -> DataLoader:
-        dataset = TokenDataset(raw_text=raw_text, dictionary=self._dictionary, ngram=self._ngram, min_ngram=self._min_ngram)
+        dataset = TokenDataset(
+            raw_text=raw_text,
+            dictionary=self._dictionary,
+            ngram=self._ngram,
+            min_ngram=self._min_ngram,
+        )
         return DataLoader(dataset, batch_size=1)
 
     def _fit_iteration(self, dataloader: DataLoader) -> None:
@@ -74,18 +79,20 @@ class Trainer:
         return f"{' '.join(sentence).capitalize()}."
 
     def _pretty_text(self, sentences: List[List[int]]) -> str:
-        return '\n'.join([self._pretty_sentence(sentence) for sentence in sentences])
+        return "\n".join([self._pretty_sentence(sentence) for sentence in sentences])
 
     def _get_sentence_tokens(self, sentence: Optional[List[str]]):
         if sentence is None:
             sentence_tokens = self._ngram_model.random_ngram()
             logger.debug(
-                'Random sentence for generation: %s',
-                ' '.join(self._dictionary.decode_many(sentence_tokens))
+                "Random sentence for generation: %s",
+                " ".join(self._dictionary.decode_many(sentence_tokens)),
             )
         else:
-            logger.debug('Input sentence for generation: %s', ' '.join(sentence))
-            sentence_tokens = TokenDataset(raw_text=' '.join(sentence), dictionary=self._dictionary).get_tokens()
+            logger.debug("Input sentence for generation: %s", " ".join(sentence))
+            sentence_tokens = TokenDataset(
+                raw_text=" ".join(sentence), dictionary=self._dictionary
+            ).get_tokens()
         return sentence_tokens
 
     def _embed_tokens(self, tokens: List[int]) -> List[ndarray]:
@@ -101,7 +108,9 @@ class Trainer:
             return a
         return a + b
 
-    def _choose_closest_next_token(self, next_tokens: List[int], current_theme_vector: ndarray) -> (int, List[float]):
+    def _choose_closest_next_token(
+        self, next_tokens: List[int], current_theme_vector: ndarray
+    ) -> (int, List[float]):
         embeddings = self._embed_tokens(next_tokens)
 
         def get_angle(iv):
@@ -110,30 +119,44 @@ class Trainer:
                 return np.inf
             angle = angle_between(current_theme_vector, v)
             return angle
+
         i, closest = min(
             enumerate(embeddings),
             key=get_angle,
         )
         next_words = self._dictionary.decode_many(next_tokens)
         logger.debug(
-            'Closest token to current theme out of %s %s is %s',
-            len(embeddings), next_words, next_words[i]
+            "Closest token to current theme out of %s %s is %s",
+            len(embeddings),
+            next_words,
+            next_words[i],
         )
         current_theme_vector = self._safe_sum(current_theme_vector, closest)
         return next_tokens[i], current_theme_vector
 
-    def _generate_text(self,  word_to_continue_left: int, base_sentence: List[int]) -> List[List[int]]:
+    def _generate_text(
+        self, word_to_continue_left: int, base_sentence: List[int]
+    ) -> List[List[int]]:
         result_text = []
         current_sentence = base_sentence
-        current_theme_vector = np.zeros(self._embedder.dim,)
+        current_theme_vector = np.zeros(
+            self._embedder.dim,
+        )
         current_theme_vector = self._safe_sum(
             current_theme_vector, self._get_sentence_embedding(current_sentence)
         )
         for i in range(word_to_continue_left):
-            tokens_to_continue = tuple(current_sentence[-self._ngram:])
-            logger.debug('Generating token %s for %s (%s)', i+1, tokens_to_continue, self._dictionary.decode_many(tokens_to_continue))
+            tokens_to_continue = tuple(current_sentence[-self._ngram :])
+            logger.debug(
+                "Generating token %s for %s (%s)",
+                i + 1,
+                tokens_to_continue,
+                self._dictionary.decode_many(tokens_to_continue),
+            )
             try:
-                next_tokens = self._ngram_model.samples(tokens_to_continue, k=self._nsamples)
+                next_tokens = self._ngram_model.samples(
+                    tokens_to_continue, k=self._nsamples
+                )
                 next_token, current_theme_vector = self._choose_closest_next_token(
                     next_tokens=next_tokens,
                     current_theme_vector=current_theme_vector,
@@ -141,7 +164,10 @@ class Trainer:
                 current_sentence.append(next_token)
             except NGramModelError:
                 next_tokens = self._ngram_model.random_ngram()
-                logger.debug('Cannot continue, starting new sentence with %s', self._dictionary.decode_many(next_tokens))
+                logger.debug(
+                    "Cannot continue, starting new sentence with %s",
+                    self._dictionary.decode_many(next_tokens),
+                )
                 result_text.append(current_sentence)
                 current_sentence = list(next_tokens)
         result_text.append(current_sentence)
@@ -149,28 +175,27 @@ class Trainer:
 
     def continue_(self, sentence: Optional[List[str]], word_count: int):
         sentence_tokens = self._get_sentence_tokens(sentence)
-        logger.debug('Target length: %s', word_count)
-        logger.debug('Dictionary len = %s', len(self._dictionary))
+        logger.debug("Target length: %s", word_count)
+        logger.debug("Dictionary len = %s", len(self._dictionary))
 
         current_sentence = []
         current_sentence.extend(sentence_tokens[:word_count])
         word_to_continue_left = word_count - len(sentence_tokens)
-        logger.debug('Starting with %s', self._dictionary.decode_many(current_sentence))
-        logger.debug('Words to generate %s', word_to_continue_left)
+        logger.debug("Starting with %s", self._dictionary.decode_many(current_sentence))
+        logger.debug("Words to generate %s", word_to_continue_left)
         result_text = self._generate_text(
-            word_to_continue_left=word_to_continue_left,
-            base_sentence=current_sentence
+            word_to_continue_left=word_to_continue_left, base_sentence=current_sentence
         )
         return self._pretty_text(result_text)
 
     def save(self, path: Path) -> None:
         to_dump = self
-        with path.open('wb') as fp:
+        with path.open("wb") as fp:
             pickle.dump(to_dump, fp)
 
     @classmethod
-    def load(cls, path: Path) -> 'Trainer':
-        with path.open('rb') as fp:
+    def load(cls, path: Path) -> "Trainer":
+        with path.open("rb") as fp:
             dumped = pickle.load(fp)
 
         return dumped

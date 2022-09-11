@@ -1,5 +1,6 @@
 import numpy as np
-np.seterr(divide='ignore', invalid='ignore')
+
+np.seterr(divide="ignore", invalid="ignore")
 
 
 def unit_vector(vector):

@@ -9,27 +9,27 @@ from src.dictionary import Dictionary
 from src.model import NGramModel
 from src.trainer import Trainer
 
-FORMAT = '%(message)s'
+FORMAT = "%(message)s"
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-parser = argparse.ArgumentParser(description='Utility for text generation model training.')
-parser.add_argument('--input-dir',
-                    default=None,
-                    help='Directory for training texts. If not set, then stdin is used.')
-parser.add_argument('--model', type=Path,
-                    default='model.pkl',
-                    help='File for saving model.')
-parser.add_argument('--ngram', type=int,
-                    default=2,
-                    help='Ngram count.')
-parser.add_argument('--min-ngram', type=int,
-                    default=1,
-                    help='Minimum ngram length.')
-parser.add_argument('--nsamples', type=int,
-                    default=3,
-                    help='Max next word samples to choose from.')
+parser = argparse.ArgumentParser(
+    description="Utility for text generation model training."
+)
+parser.add_argument(
+    "--input-dir",
+    default=None,
+    help="Directory for training texts. If not set, then stdin is used.",
+)
+parser.add_argument(
+    "--model", type=Path, default="model.pkl", help="File for saving model."
+)
+parser.add_argument("--ngram", type=int, default=2, help="Ngram count.")
+parser.add_argument("--min-ngram", type=int, default=1, help="Minimum ngram length.")
+parser.add_argument(
+    "--nsamples", type=int, default=3, help="Max next word samples to choose from."
+)
 
 
 def main():
@@ -53,5 +53,5 @@ def main():
     trainer.save(model_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
