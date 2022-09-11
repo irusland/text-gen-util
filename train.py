@@ -28,7 +28,6 @@ parser.add_argument('--model', type=Path,
                     help='File for saving model.')
 
 args = parser.parse_args()
-# print(args)
 model_path = args.model
 
 ngram_model = NGramModel()

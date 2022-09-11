@@ -8,6 +8,7 @@ authors = ["Ruslan Sirazhetdinov <ruslansir@icloud.com>"]
 python = ">=3.8"
 torch = "^1.12.1"
 torchtext = "^0.13.1"
+wikipedia = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 

@@ -26,7 +26,7 @@ parser.add_argument('--model', type=Path,
                     default='model.pkl',
                     help='File for loading model.')
 parser.add_argument('--length', type=int,
-                    default=5,
+                    default=7,
                     help='Word of resulting sentence.')
 
 args = parser.parse_args()

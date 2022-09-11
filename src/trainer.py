@@ -4,7 +4,6 @@ import pickle
 from pathlib import Path
 from typing import Optional, List
 
-from torch import tensor, Tensor
 from torch.utils.data import DataLoader
 
 from src.dataset import TokenDataset
@@ -25,10 +24,12 @@ class Trainer:
         texts = []
         if input_dir is not None:
             input_dir = Path(input_dir)
-            for i in input_dir.glob(pattern='*'):
-                if not i.is_file():
+            queue = list(input_dir.glob(pattern='*'))
+            for path in queue:
+                if not path.is_file():
+                    queue.extend(path.glob(pattern='*'))
                     continue
-                raw_text = i.read_text()
+                raw_text = path.read_text()
                 texts.append(raw_text)
         else:
             for line in fileinput.input():
@@ -53,7 +54,7 @@ class Trainer:
         sentence = tuple(self._dictionary.decode(token) for token in sentence_tokens)
         return f"{' '.join(sentence).capitalize()}."
 
-    def continue_(self, sentence: Optional[List[str]], word_count: int):
+    def _get_sentence_tokens(self, sentence: Optional[List[str]]):
         if sentence is None:
             sentence_tokens = self._ngram_model.random_ngram()
             logger.info(
@@ -63,9 +64,12 @@ class Trainer:
         else:
             logger.info('Input sentence for generation: %s', ' '.join(sentence))
             sentence_tokens = TokenDataset(raw_text=' '.join(sentence), dictionary=self._dictionary).get_tokens()
+        return sentence_tokens
 
-
+    def continue_(self, sentence: Optional[List[str]], word_count: int):
+        sentence_tokens = self._get_sentence_tokens(sentence)
         logger.info('Target length: %s', word_count)
+        logger.debug('Dictionary len = %s', len(self._dictionary))
 
         result = []
         result.extend(sentence_tokens[:word_count])
